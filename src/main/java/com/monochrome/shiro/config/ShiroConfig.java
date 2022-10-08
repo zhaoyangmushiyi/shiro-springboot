@@ -2,10 +2,16 @@ package com.monochrome.shiro.config;
 
 import com.monochrome.shiro.realm.CustomRealm;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
+import org.apache.shiro.authc.pam.AtLeastOneSuccessfulStrategy;
+import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
+import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.config.DefaultShiroFilterChainDefinition;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author monochrome
@@ -20,21 +26,47 @@ public class ShiroConfig {
         this.realm = realm;
     }
 
-    //配置 SecurityManager
+//    //配置 SecurityManager
+//    @Bean
+//    public DefaultWebSecurityManager defaultWebSecurityManager() {
+//        //1 创建 defaultWebSecurityManager 对象
+//        DefaultWebSecurityManager defaultWebSecurityManager = new DefaultWebSecurityManager();
+//        //2 创建加密对象，并设置相关属性
+//        HashedCredentialsMatcher matcher = new HashedCredentialsMatcher();
+//        //2.1 采用 md5 加密
+//        matcher.setHashAlgorithmName("md5");
+//        //2.2 迭代加密次数
+//        matcher.setHashIterations(3);
+//        //3 将加密对象存储到 myRealm 中
+//        realm.setCredentialsMatcher(matcher);
+//        //4 将 myRealm 存入 defaultWebSecurityManager 对象
+//        defaultWebSecurityManager.setRealm(realm);
+//        //5 返回
+//        return defaultWebSecurityManager;
+//    }
+    //配置 SecurityManager，实现多个Realm
     @Bean
     public DefaultWebSecurityManager defaultWebSecurityManager() {
         //1 创建 defaultWebSecurityManager 对象
         DefaultWebSecurityManager defaultWebSecurityManager = new DefaultWebSecurityManager();
-        //2 创建加密对象，并设置相关属性
+        //2 创建认证对象，并设置认证策略
+        ModularRealmAuthenticator modularRealmAuthenticator = new ModularRealmAuthenticator();
+        //有多种认证策略，AtLeastOneSuccessfulStrategy，FirstSuccessfulStrategy，AllSuccessfulStrategy
+        modularRealmAuthenticator.setAuthenticationStrategy(new AtLeastOneSuccessfulStrategy());
+        defaultWebSecurityManager.setAuthenticator(modularRealmAuthenticator);
+        //3 封装Realm集合
+        List<Realm> realms = new ArrayList<>();
+        //3.1 创建加密对象，并设置相关属性
         HashedCredentialsMatcher matcher = new HashedCredentialsMatcher();
-        //2.1 采用 md5 加密
+        //3.1.1 采用 md5 加密
         matcher.setHashAlgorithmName("md5");
-        //2.2 迭代加密次数
+        //3.1.2 迭代加密次数
         matcher.setHashIterations(3);
-        //3 将加密对象存储到 myRealm 中
+        //3.1.2 将加密对象存储到 myRealm 中
         realm.setCredentialsMatcher(matcher);
-        //4 将 myRealm 存入 defaultWebSecurityManager 对象
-        defaultWebSecurityManager.setRealm(realm);
+        realms.add(realm);
+        //4 将 realms 集合存入 defaultWebSecurityManager 对象
+        defaultWebSecurityManager.setRealms(realms);
         //5 返回
         return defaultWebSecurityManager;
     }
