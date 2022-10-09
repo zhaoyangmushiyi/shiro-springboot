@@ -4,9 +4,13 @@ import com.monochrome.shiro.realm.CustomRealm;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.authc.pam.AtLeastOneSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
+import org.apache.shiro.mgt.RememberMeManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.config.DefaultShiroFilterChainDefinition;
+import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.web.servlet.Cookie;
+import org.apache.shiro.web.servlet.SimpleCookie;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -67,8 +71,35 @@ public class ShiroConfig {
         realms.add(realm);
         //4 将 realms 集合存入 defaultWebSecurityManager 对象
         defaultWebSecurityManager.setRealms(realms);
-        //5 返回
+        //5 设置 remember me
+        defaultWebSecurityManager.setRememberMeManager(createRememberMeManager());
+        //6 返回
         return defaultWebSecurityManager;
+    }
+
+    /**
+     * 创建rememberMeManager
+     * @return rememberMeManager
+     */
+    private RememberMeManager createRememberMeManager() {
+        CookieRememberMeManager cookieRememberMeManager = new CookieRememberMeManager();
+        cookieRememberMeManager.setCookie(createRememberMeCookie());
+        cookieRememberMeManager.setCipherKey("1234567890987654".getBytes());
+        return cookieRememberMeManager;
+    }
+
+    /**
+     * 创建Cookie
+     * @return cookie
+     */
+    private Cookie createRememberMeCookie() {
+        SimpleCookie cookie = new SimpleCookie("rememberMe");
+        //设置跨域
+        //cookie.setDomain(domain);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(30 * 24 * 60 * 60);
+        return cookie;
     }
 
     //配置 Shiro 内置过滤器拦截范围
@@ -78,8 +109,12 @@ public class ShiroConfig {
         //设置不认证可以访问的资源
         definition.addPathDefinition("/user/login", "anon");
         definition.addPathDefinition("/user/userLogin", "anon");
+        //配置登出过滤器
+        definition.addPathDefinition("/logout", "logout");
         //设置需要进行登录认证的拦截范围
         definition.addPathDefinition("/**", "authc");
+        //添加存在用户的过滤器(rememberMe)
+        definition.addPathDefinition("/**", "user");
         return definition;
     }
 
