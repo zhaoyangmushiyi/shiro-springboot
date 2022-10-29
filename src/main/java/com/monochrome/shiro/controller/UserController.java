@@ -4,7 +4,10 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.subject.Subject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +23,8 @@ import javax.servlet.http.HttpSession;
 @Controller
 @RequestMapping("user")
 public class UserController {
+
+    private Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @GetMapping("userLogin")
     public String userLogin(String name, String pwd, @RequestParam(defaultValue = "false") boolean rememberMe, HttpSession session) {
@@ -49,5 +54,14 @@ public class UserController {
     @GetMapping("login")
     public String login() {
         return "login";
+    }
+
+    //登录认证验证角色
+    @RequiresRoles("admin")
+    @GetMapping("userLoginRoles")
+    @ResponseBody
+    public String userLoginRoles() {
+        logger.info("登录认证验证角色");
+        return "验证角色成功";
     }
 }
