@@ -4,6 +4,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
@@ -63,5 +64,14 @@ public class UserController {
     public String userLoginRoles() {
         logger.info("登录认证验证角色");
         return "验证角色成功";
+    }
+
+    //登录认证验证权限
+    @RequiresPermissions("user:delete")
+    @GetMapping("userLoginPermissions")
+    @ResponseBody
+    public String userLoginPermissions() {
+        logger.info("登录认证验证权限");
+        return "验证权限成功";
     }
 }

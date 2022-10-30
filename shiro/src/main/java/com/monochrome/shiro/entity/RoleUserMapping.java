@@ -16,8 +16,8 @@ import javax.persistence.Id;
 @ToString
 @RequiredArgsConstructor
 @AllArgsConstructor
-@Entity(name = "role_mapping")
-public class RoleMapping {
+@Entity(name = "role_user_mapping")
+public class RoleUserMapping {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
